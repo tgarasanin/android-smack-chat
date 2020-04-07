@@ -18,7 +18,6 @@ import androidx.core.view.GravityCompat
 import com.tgarasanin.smack.R.id
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
-import com.tgarasanin.smack.R.layout.activity_main as activity_main1
 
 class MainActivity : AppCompatActivity() {
 
