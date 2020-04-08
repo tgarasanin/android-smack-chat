@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import com.tgarasanin.smack.R
+import com.tgarasanin.smack.Service.AuthService
+import kotlinx.android.synthetic.main.activity_create_user.*
 
 class LoginActivity : AppCompatActivity() {
 
@@ -21,6 +23,17 @@ class LoginActivity : AppCompatActivity() {
     }
 
     fun loginAction(view: View) {
+        val email = emailEditText.text.toString()
+        val password = passwordEditText.text.toString()
 
+        AuthService.loginUser(this, email, password) {loginService ->
+            if (loginService) {
+                AuthService.findUserByEmail(this) {findSuccess ->
+                    if (findSuccess) {
+                        finish()
+                    }
+                }
+            }
+        }
     }
 }
