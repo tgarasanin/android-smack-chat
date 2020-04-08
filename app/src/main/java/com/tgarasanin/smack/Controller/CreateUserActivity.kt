@@ -62,9 +62,6 @@ class CreateUserActivity : AppCompatActivity() {
         val saveB = r.toDouble()/255
 
         avatarColor = "[$saveR,, $saveG, $saveB, 1]"
-
-
-
     }
 
     fun createUserAction(view: View) {

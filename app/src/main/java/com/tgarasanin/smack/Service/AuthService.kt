@@ -143,7 +143,7 @@ object AuthService {
     }
 
     fun findUserByEmail(context: Context, complete: (Boolean) -> Unit) {
-        val findUserRequest = object : JsonObjectRequest(Method.GET, "$URL_GET_USER$userEmail", Response.Listener { response ->
+        val findUserRequest = object : JsonObjectRequest(Method.GET, "$URL_GET_USER$userEmail", null, Response.Listener { response ->
             try {
                 UserDataService.name = response.getString("name")
                 UserDataService.email = response.getString("email")
@@ -151,13 +151,13 @@ object AuthService {
                 UserDataService.avatarColor = response.getString("avatarColor")
                 UserDataService.id = response.getString("_id")
 
-                val userDataChange = Intent(BROADCAST_USER_DATA_CHANGE)
-                LocalBroadcastManager.getInstance(this).sendBroadcast(userDataChange)
+                val userDataChange = Intent("BROADCAST_USER_DATA_CHANGE")
+                LocalBroadcastManager.getInstance(context).sendBroadcast(userDataChange)
 
                 complete(true)
 
             } catch (e: JSONException) {
-                Log.d("ERROR", "Could not crete an user: $error")
+                Log.d("ERROR", "Could not crete an user: $e")
                 complete(false)
             }
 
