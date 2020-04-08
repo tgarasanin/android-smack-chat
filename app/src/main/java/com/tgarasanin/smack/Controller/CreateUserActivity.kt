@@ -1,11 +1,13 @@
-package com.tgarasanin.smack
+package com.tgarasanin.smack.Controller
 
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import com.tgarasanin.smack.R
+import com.tgarasanin.smack.Service.AuthService
 import kotlinx.android.synthetic.main.activity_create_user.*
-import kotlinx.android.synthetic.main.nav_header_main.*
 import kotlin.random.Random
 
 class CreateUserActivity : AppCompatActivity() {
@@ -51,7 +53,12 @@ class CreateUserActivity : AppCompatActivity() {
     }
 
     fun createUserAction(view: View){
+        AuthService.registerUser(this, "j@j.com", "123456") { complete ->
+            Log.d("TAG", complete.toString())
+            if (complete) {
 
+            }
+        }
     }
 
 }
