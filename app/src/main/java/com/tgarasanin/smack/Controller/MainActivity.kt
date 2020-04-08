@@ -3,6 +3,7 @@ package com.tgarasanin.smack.Controller
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Bundle
 import android.service.autofill.UserData
@@ -15,6 +16,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.tgarasanin.smack.R
 import com.tgarasanin.smack.Service.AuthService
 import com.tgarasanin.smack.Service.UserDataService
+import com.tgarasanin.smack.Utilities.BROADCAST_USER_DATA_CHANGE
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
@@ -34,7 +36,8 @@ class MainActivity : AppCompatActivity() {
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver)
+        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(
+            BROADCAST_USER_DATA_CHANGE))
     }
 
     private val userDataChangeReceiver = object: BroadcastReceiver() {
