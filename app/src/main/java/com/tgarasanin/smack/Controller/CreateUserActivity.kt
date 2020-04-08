@@ -53,10 +53,21 @@ class CreateUserActivity : AppCompatActivity() {
     }
 
     fun createUserAction(view: View){
-        AuthService.registerUser(this, "j@j.com", "123456") { complete ->
-            Log.d("TAG", complete.toString())
-            if (complete) {
+        val username = usernameEditText.text.toString()
+        val email = emailEditText.text.toString()
+        val password = passwordEditText.text.toString()
 
+        //"j@j.com", 123456
+        AuthService.registerUser(this, email, password) { registerSuccess ->
+            Log.d("TAG", registerSuccess.toString())
+            if (registerSuccess) {
+                AuthService.loginUser(this, email, password) {loginSuccess ->
+                    if (loginSuccess) {
+                        AuthService.createUser(this, username, email, userAvatar, avatarColor) {createSuccess ->
+                            finish()
+                        }
+                    }
+                }
             }
         }
     }
