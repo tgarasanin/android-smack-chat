@@ -16,6 +16,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.tgarasanin.smack.Adapters.MessageAdapter
 import com.tgarasanin.smack.Model.Message
 import com.tgarasanin.smack.R
 import com.tgarasanin.smack.Service.AuthService
@@ -37,10 +40,16 @@ class MainActivity : AppCompatActivity() {
     val socket = IO.socket(SOCKET_URL)
     lateinit var channelAdapter: ArrayAdapter<com.tgarasanin.smack.Model.Channel>
     var selectedChannel : com.tgarasanin.smack.Model.Channel? = null
+    lateinit var messageAdapter: MessageAdapter
 
     private fun setupAdapters() {
         channelAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, MessageService.channels)
         channel_list.adapter = channelAdapter
+
+        messageAdapter = MessageAdapter(this, MessageService.messages)
+        chatRecyclerView.adapter = messageAdapter
+        val layoutManager = LinearLayoutManager(this)
+        chatRecyclerView.layoutManager = layoutManager
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,8 +127,9 @@ class MainActivity : AppCompatActivity() {
         if (selectedChannel != null) {
             MessageService.getMessages(selectedChannel!!.id) {complete ->
                 if (complete) {
-                    for (message in MessageService.messages) {
-
+                    messageAdapter.notifyDataSetChanged()
+                    if (messageAdapter.itemCount > 0) {
+                        chatRecyclerView.smoothScrollToPosition(messageAdapter.itemCount - 1)
                     }
                 }
             }
@@ -140,6 +150,8 @@ class MainActivity : AppCompatActivity() {
     fun loginNavBarAction(view: View) {
         if (App.prefs.isLoggedIn) {
            UserDataService.logout()
+            channelAdapter.notifyDataSetChanged()
+            messageAdapter.notifyDataSetChanged()
             loginButton.text = "Login"
             emailNavTextView.text = ""
             profileNavImageView.setImageResource(R.drawable.profiledefault)
@@ -199,6 +211,8 @@ class MainActivity : AppCompatActivity() {
 
                      val newMessage = Message(msgBody, channelId, userName, userAvatar, avatarColor, userID, timestamp)
                      MessageService.messages.add(newMessage)
+                     messageAdapter.notifyDataSetChanged()
+                     chatRecyclerView.smoothScrollToPosition(messageAdapter.itemCount - 1)
                  }
             }
         }
