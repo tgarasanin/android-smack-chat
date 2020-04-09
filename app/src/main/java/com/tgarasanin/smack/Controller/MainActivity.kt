@@ -171,7 +171,13 @@ class MainActivity : AppCompatActivity() {
 
 
     fun sendMessageAction(view: View) {
-        hideKeyboard()
+        if (App.prefs.isLoggedIn && messageEditText.text.isNotEmpty() && selectedChannel != null) {
+            val userID = UserDataService.id
+            val channelID = selectedChannel!!.id
+            socket.emit("newMessage", messageEditText.text.toString(), userID, channelID, UserDataService.name, UserDataService.avatarName, UserDataService.avatarColor)
+            messageEditText.text.clear()
+            hideKeyboard()
+        }
         Log.d("TAG", "TEODORA")
     }
 
