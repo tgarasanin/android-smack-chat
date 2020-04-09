@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
                profileNavImageView.setBackgroundColor(UserDataService.returnAvatarColor(UserDataService.avatarColor))
                loginButton.text = "Logout"
 
-               MessageService.getChannels(context) { complete ->
+               MessageService.getChannels() { complete ->
                    if (complete) {
                        channelAdapter.notifyDataSetChanged()
                    }
