@@ -19,12 +19,16 @@ import com.tgarasanin.smack.R
 import com.tgarasanin.smack.Service.AuthService
 import com.tgarasanin.smack.Service.UserDataService
 import com.tgarasanin.smack.Utilities.BROADCAST_USER_DATA_CHANGE
+import com.tgarasanin.smack.Utilities.SOCKET_URL
+import io.socket.client.IO
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.add_channel_dialog.view.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    val socket = IO.socket(SOCKET_URL)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,10 +42,25 @@ class MainActivity : AppCompatActivity() {
         )
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
-        hideKeyboard()
 
+
+    }
+
+    override fun onResume() {
+        super.onResume()
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(
             BROADCAST_USER_DATA_CHANGE))
+        socket.connect()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        socket.disconnect()
     }
 
     private val userDataChangeReceiver = object: BroadcastReceiver() {
@@ -89,16 +108,17 @@ class MainActivity : AppCompatActivity() {
                     val name = dialogView.channelNameEditText.text.toString()
                     val description = dialogView.channelDescriptionEditText.text.toString()
                     // create a channen
-                    hideKeyboard()
+
                 }
                 .setNegativeButton("Cancel") { diaglogInterface, i ->
-                    hideKeyboard()
+
                 }
                 .show()
         }
     }
 
     fun sendMessageAction(view: View) {
+        hideKeyboard()
         Log.d("TAG", "TEODORA")
     }
 
