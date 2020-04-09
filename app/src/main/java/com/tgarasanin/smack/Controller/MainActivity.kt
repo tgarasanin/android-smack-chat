@@ -10,6 +10,7 @@ import android.service.autofill.UserData
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -32,6 +33,12 @@ import kotlinx.coroutines.channels.Channel
 class MainActivity : AppCompatActivity() {
 
     val socket = IO.socket(SOCKET_URL)
+    lateinit var channelAdapter: ArrayAdapter<com.tgarasanin.smack.Model.Channel>
+
+    private fun setupAdapters() {
+        channelAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, MessageService.channels)
+        channel_list.adapter = channelAdapter
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         )
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
+        setupAdapters()
 
 
     }
@@ -64,7 +72,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val userDataChangeReceiver = object: BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
+        override fun onReceive(context: Context, intent: Intent?) {
            if (AuthService.isLoggedIn) {
                usernameNavTextView.text = UserDataService.name
                emailNavTextView.text = UserDataService.email
@@ -72,6 +80,13 @@ class MainActivity : AppCompatActivity() {
                profileNavImageView.setImageResource(resourceId)
                profileNavImageView.setBackgroundColor(UserDataService.returnAvatarColor(UserDataService.avatarColor))
                loginButton.text = "Logout"
+
+               MessageService.getChannels(context) { complete ->
+                   if (complete) {
+                       channelAdapter.notifyDataSetChanged()
+                   }
+               }
+
            }
         }
     }
@@ -127,6 +142,7 @@ class MainActivity : AppCompatActivity() {
 
             val newChannel = com.tgarasanin.smack.Model.Channel(name, desc, channelID)
             MessageService.channels.add(newChannel)
+            channelAdapter.notifyDataSetChanged()
         }
     }
 
