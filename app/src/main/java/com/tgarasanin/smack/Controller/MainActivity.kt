@@ -17,14 +17,17 @@ import androidx.core.view.GravityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.tgarasanin.smack.R
 import com.tgarasanin.smack.Service.AuthService
+import com.tgarasanin.smack.Service.MessageService
 import com.tgarasanin.smack.Service.UserDataService
 import com.tgarasanin.smack.Utilities.BROADCAST_USER_DATA_CHANGE
 import com.tgarasanin.smack.Utilities.SOCKET_URL
 import io.socket.client.IO
+import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.add_channel_dialog.view.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
+import kotlinx.coroutines.channels.Channel
 
 class MainActivity : AppCompatActivity() {
 
@@ -51,15 +54,12 @@ class MainActivity : AppCompatActivity() {
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(
             BROADCAST_USER_DATA_CHANGE))
         socket.connect()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
+        socket.on("channelCreated", onNewChannel)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
         socket.disconnect()
     }
 
@@ -107,7 +107,9 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton("Add") { diaglogInterface, i ->
                     val name = dialogView.channelNameEditText.text.toString()
                     val description = dialogView.channelDescriptionEditText.text.toString()
-                    // create a channen
+                    // create a channel
+
+                    socket.emit("newChannel", name, description)
 
                 }
                 .setNegativeButton("Cancel") { diaglogInterface, i ->
@@ -116,6 +118,18 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
     }
+
+    private val onNewChannel = Emitter.Listener { args ->
+        runOnUiThread {
+            val name = args[0] as String
+            val desc = args[1] as String
+            val channelID = args[2] as String
+
+            val newChannel = com.tgarasanin.smack.Model.Channel(name, desc, channelID)
+            MessageService.channels.add(newChannel)
+        }
+    }
+
 
     fun sendMessageAction(view: View) {
         hideKeyboard()
