@@ -27,6 +27,7 @@ import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.add_channel_dialog.view.*
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import kotlinx.coroutines.channels.Channel
 
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
 
     val socket = IO.socket(SOCKET_URL)
     lateinit var channelAdapter: ArrayAdapter<com.tgarasanin.smack.Model.Channel>
+    var selectedChannel : com.tgarasanin.smack.Model.Channel? = null
 
     private fun setupAdapters() {
         channelAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, MessageService.channels)
@@ -53,6 +55,16 @@ class MainActivity : AppCompatActivity() {
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         setupAdapters()
+
+        channel_list.setOnItemClickListener { _, _, position, _ ->
+            selectedChannel = MessageService.channels[position]
+            drawer_layout.closeDrawer(GravityCompat.START)
+            updateWithChannel()
+        }
+
+        if (App.prefs.isLoggedIn) {
+            AuthService.findUserByEmail(this){}
+        }
 
 
     }
@@ -83,13 +95,24 @@ class MainActivity : AppCompatActivity() {
 
                MessageService.getChannels() { complete ->
                    if (complete) {
-                       channelAdapter.notifyDataSetChanged()
+                       if (MessageService.channels.count() > 0) {
+                           selectedChannel = MessageService.channels[0]
+                           channelAdapter.notifyDataSetChanged()
+                           updateWithChannel()
+                       }
+
                    }
                }
 
            }
         }
     }
+
+    fun updateWithChannel() {
+        channelNameTextView.text = "#${selectedChannel?.name}"
+        // download message for channel
+    }
+
 
 
     override fun onBackPressed() {
@@ -119,7 +142,7 @@ class MainActivity : AppCompatActivity() {
             val builder = AlertDialog.Builder(this)
             val dialogView = layoutInflater.inflate(R.layout.add_channel_dialog, null)
             builder.setView(dialogView)
-                .setPositiveButton("Add") { diaglogInterface, i ->
+                .setPositiveButton("Add") { _ , _ ->
                     val name = dialogView.channelNameEditText.text.toString()
                     val description = dialogView.channelDescriptionEditText.text.toString()
                     // create a channel
@@ -127,7 +150,7 @@ class MainActivity : AppCompatActivity() {
                     socket.emit("newChannel", name, description)
 
                 }
-                .setNegativeButton("Cancel") { diaglogInterface, i ->
+                .setNegativeButton("Cancel") { _, _ ->
 
                 }
                 .show()
