@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.tgarasanin.smack.Model.Message
 import com.tgarasanin.smack.R
 import com.tgarasanin.smack.Service.AuthService
 import com.tgarasanin.smack.Service.MessageService
@@ -47,6 +48,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        socket.connect()
+        socket.on("channelCreated", onNewChannel)
+        socket.on("messageCreated", onNewMessage)
+
         val toggle = ActionBarDrawerToggle(
             this, drawer_layout, toolbar,
             R.string.navigation_drawer_open,
@@ -70,11 +75,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        super.onResume()
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(
             BROADCAST_USER_DATA_CHANGE))
-        socket.connect()
-        socket.on("channelCreated", onNewChannel)
+        super.onResume()
+
     }
 
     override fun onDestroy() {
@@ -167,6 +171,23 @@ class MainActivity : AppCompatActivity() {
             MessageService.channels.add(newChannel)
             channelAdapter.notifyDataSetChanged()
         }
+    }
+
+    private val onNewMessage = Emitter.Listener { args ->
+        runOnUiThread {
+            val msgBody = args[0] as String
+            val channelId = args[2] as String
+            val userName = args[3] as String
+            val userAvatar = args[4] as String
+            val avatarColor = args[5] as String
+            val userID: String = args[6] as String
+            val timestamp: String = args[7] as String
+
+            val newMessage = Message(msgBody, channelId, userName, userAvatar, avatarColor, userID, timestamp)
+            MessageService.messages.add(newMessage)
+
+        }
+
     }
 
 
